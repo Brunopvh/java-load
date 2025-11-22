@@ -6,7 +6,10 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Classe que usa o padrão Adapter. Ela recebe um objeto ExcelReader e
@@ -118,6 +121,54 @@ public class ExcelProcessor {
                         break;
                 }
             }
+        }
+    }
+
+    // Obter as colunas
+    public List<String> getHeader(Sheet sheet) {
+        Row header = sheet.getRow(0);
+        if (header == null) {
+            throw new RuntimeException("A planilha não tem cabeçalho (linha 0)");
+        }
+        List<String> columns = new ArrayList<>();
+        for (Cell cell : header) {
+            columns.add(cell.getStringCellValue().trim());
+        }
+        return columns;
+    }
+
+    public String getCellValueAsString(Cell cell) {
+        if (cell == null) {
+            return "nan";
+        }
+
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue();
+            case NUMERIC:
+                // Lida com datas e números
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    return new SimpleDateFormat("dd/MM/yyyy").format(cell.getDateCellValue());
+                } else {
+                    // Formata números para evitar notação científica em inteiros
+                    // ou usa um DecimalFormat se for o caso.
+                    return String.valueOf((long)cell.getNumericCellValue());
+                }
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            case FORMULA:
+                // Tenta obter o valor resolvido da fórmula
+                try {
+                    // Você precisaria de um FormulaEvaluator aqui,
+                    // mas para simplificar, apenas retorna a fórmula
+                    return cell.getCellFormula();
+                } catch (Exception e) {
+                    return "";
+                }
+            case BLANK:
+                return "nan";
+            default:
+                return "nan";
         }
     }
 }
