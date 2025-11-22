@@ -92,6 +92,9 @@ public class ExcelProcessor {
         }
     }
 
+    public Workbook getWorkbook() {
+        return this.reader.getWorkbook();
+    }
     /**
      * Método auxiliar (do seu código anterior) para copiar linhas.
      */
